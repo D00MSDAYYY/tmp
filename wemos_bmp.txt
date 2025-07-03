@@ -1,0 +1,59 @@
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+Adafruit_BMP085 bmp;
+
+uint16_t timer = 0;
+
+void setup() {
+  Serial.begin(9600);
+  delay(2000); // Ожидание инициализации порта
+  
+  Wire.begin(4, 5); // SDA=D2 (GPIO4), SCL=D1 (GPIO5)
+  
+  Serial.println("\nИнициализация...");
+  
+  if (!bmp.begin()) {
+    Serial.println("BMP180 не найден! Проверьте подключение.");
+    scanI2C(); // Вызов сканера
+    while(1); // Стоп
+  }
+  
+  Serial.println("BMP180 готов");
+}
+
+void loop() {
+
+  if (millis() - timer >= 3000 ) {
+   float temp = bmp.readTemperature();
+   float pressure = bmp.readPressure() / 100.0;
+  
+   Serial.print("Температура: ");
+   Serial.print(temp);
+   Serial.println(" °C");
+  
+   Serial.print("Давление: ");
+   Serial.print(pressure);
+   Serial.println(" гПа");
+
+   timer = millis();
+  }
+  
+  
+  
+  
+}
+
+void scanI2C() {
+  Serial.println("Сканирование I2C...");
+  byte count = 0;
+  for (byte i = 8; i < 120; i++) {
+    Wire.beginTransmission(i);
+    if (Wire.endTransmission() == 0) {
+      Serial.print("Найден адрес: 0x");
+      Serial.println(i, HEX);
+      count++;
+    }
+  }
+  Serial.println("Сканирование завершено");
+}

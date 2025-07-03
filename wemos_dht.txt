@@ -1,0 +1,50 @@
+#include <DHTesp.h>
+
+#define DHTPIN 4 // GPIO4 (D2 на WeMos/NodeMCU)
+
+DHTesp dht; // Создаем экземпляр класса DHTesp
+
+uint32_t timer = 0;
+
+void setup() {
+  Serial.begin(9600);
+  delay(2000);
+
+  Serial.println("\nИнициализация DHT11...");
+
+  dht.setup(DHTPIN, DHTesp::DHT11); // Инициализация датчика DHT11
+  //DHTesp::DHT11 - для DHT11, DHTesp::DHT22 для DHT22
+
+  Serial.println("DHT11 готов");
+}
+
+void loop() {
+  delay(3000);
+  if (millis() - timer >= 3000) {
+    TempAndHumidity data = dht.getTempAndHumidity();
+
+    // Проверка на ошибки чтения
+    if (data.temperature == NAN || data.humidity == NAN) {
+      Serial.println("Ошибка чтения с DHT11!");
+      timer = millis();
+      return;
+    }
+
+    Serial.print("Температура: ");
+    Serial.print(data.temperature);
+    Serial.println(" °C");
+
+    Serial.print("Влажность: ");
+    Serial.print(data.humidity);
+    Serial.println(" %");
+
+    //Рассчитываем Heat Index (ощущаемую температуру) - функция computeHeatIndex не входит в DHTesp
+    //Закомментируем, чтобы код компилировался
+    //float heatIndex = dht.computeHeatIndex(data.temperature, data.humidity, false);
+    //Serial.print("Ощущаемая температура: ");
+    //Serial.print(heatIndex);
+    //Serial.println(" °C");
+
+    timer = millis();
+  } 
+}
