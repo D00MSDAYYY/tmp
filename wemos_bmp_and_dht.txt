@@ -2,9 +2,9 @@
 #include <Wire.h>
 #include <Adafruit_BMP085.h>
 
-#define DHTPIN 4     // GPIO4 (D2)
-#define SDA_PIN 12   // GPIO12 (D6)
-#define SCL_PIN 14   // GPIO14 (D5)
+#define DHTPIN 2     
+#define SDA_PIN 4   
+#define SCL_PIN 5   
 
 DHTesp dht;
 Adafruit_BMP085 bmp;
