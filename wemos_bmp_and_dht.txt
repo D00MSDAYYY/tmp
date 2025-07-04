@@ -1,0 +1,61 @@
+#include <DHTesp.h>
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+#define DHTPIN 4     // GPIO4 (D2)
+#define SDA_PIN 12   // GPIO12 (D6)
+#define SCL_PIN 14   // GPIO14 (D5)
+
+DHTesp dht;
+Adafruit_BMP085 bmp;
+
+void setup() {
+  Serial.begin(9600);
+  while(!Serial); // Ожидание готовности порта
+  
+  // Инициализация DHT11
+  dht.setup(DHTPIN, DHTesp::DHT11);
+  
+  // Альтернативные пины I2C
+  Wire.begin(SDA_PIN, SCL_PIN);
+  delay(100);
+  
+  if(!bmp.begin()) {
+    Serial.println("BMP180 не найден! Проверьте:");
+    Serial.println("1. Подключение SDA->D6, SCL->D5");
+    Serial.println("2. Адрес 0x77 (попробуйте bmp.begin(0x77))");
+    while(1);
+  }
+  
+  Serial.println("\nДатчики инициализированы\n");
+}
+
+void loop() {
+  static uint32_t timer;
+  
+  if(millis() - timer >= 3000) {
+    // Чтение DHT11
+    TempAndHumidity dhtData = dht.getTempAndHumidity();
+    
+    // Чтение BMP180
+    float bmpTemp = bmp.readTemperature();
+    float pressure = bmp.readPressure() / 100.0f;
+
+    // Вывод данных
+    Serial.println("----- " + String(millis()/1000) + " сек -----");
+    
+    // DHT11
+    if(dht.getStatus() == 0) {
+      Serial.printf("DHT11  | Температура: %.1f°C | Влажность: %.1f%%\n", 
+                  dhtData.temperature, dhtData.humidity);
+    } else {
+      Serial.println("DHT11 ошибка: " + String(dht.getStatusString()));
+    }
+    
+    // BMP180
+    Serial.printf("BMP180 | Температура: %.1f°C | Давление: %.2f гПа\n", 
+                bmpTemp, pressure);
+    
+    timer = millis();
+  }
+}
